@@ -8,7 +8,7 @@ export default function ToolsPage() {
             <CardHeader>
                 <CardTitle>Tools</CardTitle>
                 <CardDescription>Explore powerful tools to enhance your workflow.</CardDescription>
-            </Header>
+            </CardHeader>
             <CardContent>
                 <div className="flex flex-col items-center justify-center text-center p-8 border-2 border-dashed rounded-lg">
                     <Shapes className="h-16 w-16 text-muted-foreground mb-4" />
