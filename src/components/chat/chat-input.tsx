@@ -1,5 +1,6 @@
 "use client"
 
+import * as React from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Send, Mic, Sparkles, HelpCircle, FileText } from "lucide-react";
