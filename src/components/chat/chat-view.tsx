@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { ChatMessage } from './chat-message';
 import { ChatInput } from './chat-input';
@@ -20,9 +20,9 @@ export function ChatView({ chatId }: { chatId: string }) {
   const { user } = useUser();
   const [messages, setMessages] = useState<Message[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  const scrollAreaRef = React.useRef<HTMLDivElement>(null);
+  const scrollAreaRef = useRef<HTMLDivElement>(null);
   const { mode, getSystemPrompt } = useChatMode();
-  const { getChatTitle } = useChatHistory();
+  const { getChatTitle, renameChat } = useChatHistory();
 
   // Load messages from local storage when the component mounts or chatId/user changes
   useEffect(() => {
@@ -53,6 +53,9 @@ export function ChatView({ chatId }: { chatId: string }) {
   useEffect(() => {
     async function setInitialTone() {
         const title = getChatTitle(chatId);
+        // Do not reset messages if they already exist for this chat
+        if (messages.length > 1) return;
+
       const welcomeMessage = `Greetings! I am CODEEX AI. This is the start of your conversation in "${title}". How may I assist you today?`;
       const tone = mode === 'magical' ? 'whimsical and enchanting' : mode === 'jarvis' ? 'formal and professional' : 'like a CLI';
 
@@ -69,10 +72,7 @@ export function ChatView({ chatId }: { chatId: string }) {
         },
       ]);
     }
-    // Only run if there are no messages yet
-    if (messages.length === 0) {
-        setInitialTone();
-    }
+    setInitialTone();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [mode, chatId, getChatTitle]);
 
@@ -82,6 +82,14 @@ export function ChatView({ chatId }: { chatId: string }) {
       role: 'user',
       content,
     };
+    
+    // Check if this is the first user message in a new chat, and rename the chat
+    const isFirstUserMessage = messages.length === 1 && messages[0].role === 'assistant';
+    if(isFirstUserMessage) {
+        const newTitle = content.substring(0, 30) + (content.length > 30 ? '...' : '');
+        renameChat(chatId, newTitle);
+    }
+
     setMessages((prev) => [...prev, userMessage]);
     setIsLoading(true);
 
@@ -115,7 +123,7 @@ export function ChatView({ chatId }: { chatId: string }) {
     }
   };
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (scrollAreaRef.current) {
       scrollAreaRef.current.scrollTo({
         top: scrollAreaRef.current.scrollHeight,
