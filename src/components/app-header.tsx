@@ -1,3 +1,5 @@
+'use client';
+
 import { ModeSwitcher } from "@/components/mode-switcher";
 import { UserNav } from "@/components/user-nav";
 import { SidebarTrigger } from "@/components/ui/sidebar";
