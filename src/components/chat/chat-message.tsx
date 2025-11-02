@@ -3,18 +3,36 @@
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
 import type { Message } from "./chat-view";
-import { PlaceHolderImages } from "@/lib/placeholder-images";
 import { CodeexIcon } from "../icons";
 import { Button } from "../ui/button";
 import { Volume2 } from "lucide-react";
-import React from "react";
+import React, { useEffect } from "react";
 import { textToSpeech } from "@/ai/flows/text-to-speech";
+import { useDoc, useFirestore, useMemoFirebase, useUser } from "@/firebase";
+import { doc } from "firebase/firestore";
 
 export function ChatMessage({ message }: { message: Message }) {
-    const userAvatar = PlaceHolderImages.find(p => p.id === 'user-avatar');
+    const { user } = useUser();
+    const firestore = useFirestore();
+    const userDocRef = useMemoFirebase(
+      () => (firestore && user ? doc(firestore, 'users', user.uid) : null),
+      [firestore, user]
+    );
+    const { data: userProfile } = useDoc<{ voicePreference?: string }>(userDocRef);
+
     const [audio, setAudio] = React.useState<HTMLAudioElement | null>(null);
     const [isPlaying, setIsPlaying] = React.useState(false);
     
+    useEffect(() => {
+        // Clean up audio element on unmount
+        return () => {
+            if (audio) {
+                audio.pause();
+                setAudio(null);
+            }
+        }
+    }, [audio]);
+
     const handlePlayAudio = async () => {
         if (audio) {
             if (isPlaying) {
@@ -28,7 +46,10 @@ export function ChatMessage({ message }: { message: Message }) {
         }
 
         try {
-            const response = await textToSpeech({ text: message.content });
+            const response = await textToSpeech({ 
+                text: message.content,
+                voice: userProfile?.voicePreference || 'Algenib',
+            });
             const newAudio = new Audio(response.audioDataUri);
             setAudio(newAudio);
             newAudio.play();
@@ -79,8 +100,8 @@ export function ChatMessage({ message }: { message: Message }) {
 
       {message.role === "user" && (
         <Avatar className="h-9 w-9">
-            <AvatarImage src={userAvatar?.imageUrl} alt="User" data-ai-hint={userAvatar?.imageHint} />
-            <AvatarFallback>U</AvatarFallback>
+            <AvatarImage src={user?.photoURL || undefined} alt={user?.displayName || "User"} />
+            <AvatarFallback>{user?.displayName?.[0] || 'U'}</AvatarFallback>
         </Avatar>
       )}
     </div>

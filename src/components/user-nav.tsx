@@ -12,14 +12,12 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { useAuth, useUser } from '@/firebase';
-import { PlaceHolderImages } from '@/lib/placeholder-images';
 import { LogOut, Settings, User as UserIcon } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { ThemeSwitcher } from './theme-switcher';
 
 export function UserNav() {
-  const userAvatar = PlaceHolderImages.find((p) => p.id === 'user-avatar');
   const { user } = useUser();
   const auth = useAuth();
   const router = useRouter();
@@ -41,9 +39,8 @@ export function UserNav() {
         <Button variant="ghost" className="relative h-8 w-8 rounded-full">
           <Avatar className="h-9 w-9">
             <AvatarImage
-              src={user?.photoURL || userAvatar?.imageUrl}
+              src={user?.photoURL || undefined}
               alt={user?.displayName || 'User'}
-              data-ai-hint={userAvatar?.imageHint}
             />
             <AvatarFallback>{user?.displayName?.[0] || 'U'}</AvatarFallback>
           </Avatar>
