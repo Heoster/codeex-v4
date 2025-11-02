@@ -37,11 +37,50 @@ async function createUserProfile(user: User) {
     });
 }
 
+function handleAuthError(error: any) {
+    console.error("Authentication Error:", error);
+    if (error.code === 'auth/operation-not-allowed' || error.code === 'auth/configuration-not-found') {
+        toast({
+            title: "Authentication Not Enabled",
+            description: "Please enable Email/Password and Google sign-in in your Firebase Console > Authentication > Sign-in method.",
+            variant: "destructive",
+            duration: 10000,
+        });
+    } else if (error.code === 'auth/api-key-not-valid') {
+        toast({
+            title: "Invalid API Key",
+            description: "The provided Firebase API key is not valid. Please check your configuration.",
+            variant: "destructive",
+        });
+    } else if (error.code === 'auth/wrong-password' || error.code === 'auth/user-not-found' || error.code === 'auth/invalid-credential' || error.code === 'auth/invalid-email') {
+        toast({
+            title: "Login Failed",
+            description: "Invalid email or password. Please try again.",
+            variant: "destructive",
+        });
+    } else if (error.code === 'auth/email-already-in-use') {
+        toast({
+            title: "Email already in use",
+            description: "This email is already registered. Please login instead.",
+            variant: "destructive",
+        });
+    } else if (error.code === 'auth/cancelled-popup-request') {
+        // Don't show an error toast if the user simply cancels the popup.
+        return;
+    } else {
+        toast({
+            title: "Authentication Error",
+            description: error.message,
+            variant: "destructive",
+        });
+    }
+}
+
 
 /** Initiate anonymous sign-in (non-blocking). */
 export function initiateAnonymousSignIn(authInstance: Auth): void {
   // CRITICAL: Call signInAnonymously directly. Do NOT use 'await signInAnonymously(...)'.
-  signInAnonymously(authInstance);
+  signInAnonymously(authInstance).catch(handleAuthError);
   // Code continues immediately. Auth state change is handled by onAuthStateChanged listener.
 }
 
@@ -60,21 +99,7 @@ export function initiateEmailSignUp(authInstance: Auth, email: string, password:
             });
         }
     })
-    .catch((error) => {
-        if (error.code === 'auth/email-already-in-use') {
-            toast({
-                title: "Email already in use",
-                description: "This email is already registered. Please login instead.",
-                variant: "destructive",
-            });
-        } else {
-            toast({
-                title: "Signup Error",
-                description: error.message,
-                variant: "destructive",
-            });
-        }
-    });
+    .catch(handleAuthError);
 }
 
 /** Initiate email/password sign-in (non-blocking). */
@@ -98,21 +123,7 @@ export function initiateEmailSignIn(authInstance: Auth, email: string, password:
             });
     }
   })
-    .catch((error) => {
-        if (error.code === 'auth/wrong-password' || error.code === 'auth/user-not-found' || error.code === 'auth/invalid-credential' || error.code === 'auth/invalid-email') {
-            toast({
-                title: "Login Failed",
-                description: "Invalid email or password. Please try again.",
-                variant: "destructive",
-            });
-        } else {
-            toast({
-                title: "Login Error",
-                description: error.message,
-                variant: "destructive",
-            });
-        }
-    });
+    .catch(handleAuthError);
 }
 
 /** Handle Google Sign-In and profile creation */
@@ -145,16 +156,5 @@ export function initiateGoogleSignIn(auth: Auth): void {
         });
       }
     })
-    .catch((error) => {
-      // Don't show an error toast if the user simply cancels the popup.
-      if (error.code === 'auth/cancelled-popup-request') {
-        return;
-      }
-      console.error("Google Sign-In Error", error);
-      toast({
-        title: "Google Sign-In Failed",
-        description: error.message,
-        variant: "destructive",
-      });
-    });
+    .catch(handleAuthError);
 }
