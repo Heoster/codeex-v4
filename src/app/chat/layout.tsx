@@ -8,10 +8,6 @@ import { useRouter, usePathname } from "next/navigation";
 import { useEffect } from "react";
 import { ChatModeProvider } from "@/components/chat/chat-mode-provider";
 
-function generateChatId() {
-    return Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
-}
-
 export default function ChatLayout({
   children,
 }: {
@@ -28,10 +24,9 @@ export default function ChatLayout({
   }, [user, isUserLoading, router]);
 
   useEffect(() => {
-    // If we are on /chat, redirect to a new chat
+    // If we are on /chat, redirect to a new chat based on user id
     if (user && pathname === '/chat') {
-        const newChatId = generateChatId();
-        router.replace(`/chat/${newChatId}`);
+        router.replace(`/chat/${user.uid}`);
     }
   }, [user, router, pathname]);
 

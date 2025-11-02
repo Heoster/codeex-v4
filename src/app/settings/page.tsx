@@ -114,7 +114,7 @@ export default function SettingsPage() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          {isLoading ? (
+          {isLoading || form.formState.isSubmitting ? (
             <p>Loading profile...</p>
           ) : (
             <Form {...form}>

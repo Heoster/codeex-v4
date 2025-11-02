@@ -30,6 +30,10 @@ export function UserNav() {
     }
   };
 
+  if (!user) {
+    return null;
+  }
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
