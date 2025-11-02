@@ -4,7 +4,7 @@ import { useUser } from "@/firebase";
 import { AppHeader } from "@/components/app-header";
 import { AppSidebar } from "@/components/app-sidebar";
 import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import { useEffect } from "react";
 import { ChatModeProvider } from "@/components/chat/chat-mode-provider";
 
@@ -19,12 +19,21 @@ export default function ChatLayout({
 }) {
   const { user, isUserLoading } = useUser();
   const router = useRouter();
+  const pathname = usePathname();
 
   useEffect(() => {
     if (!isUserLoading && !user) {
       router.push('/login');
     }
   }, [user, isUserLoading, router]);
+
+  useEffect(() => {
+    // If we are on /chat, redirect to a new chat
+    if (user && pathname === '/chat') {
+        const newChatId = generateChatId();
+        router.replace(`/chat/${newChatId}`);
+    }
+  }, [user, router, pathname]);
 
   if (isUserLoading || !user) {
     return (
@@ -33,15 +42,6 @@ export default function ChatLayout({
       </div>
     );
   }
-
-  // If we are on /chat, redirect to a new chat
-  useEffect(() => {
-    if (user && window.location.pathname === '/chat') {
-        const newChatId = generateChatId();
-        router.replace(`/chat/${newChatId}`);
-    }
-  }, [user, router]);
-
 
   return (
     <ChatModeProvider>
