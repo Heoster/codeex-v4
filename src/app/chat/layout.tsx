@@ -25,7 +25,7 @@ export default function ChatLayout({
   }, [user, isUserLoading, router]);
 
   useEffect(() => {
-    // If we are on /chat, redirect to a new chat based on user id
+    // If we are on /chat, redirect to the user's default chat
     if (user && pathname === '/chat') {
         router.replace(`/chat/${user.uid}`);
     }
