@@ -3,13 +3,13 @@
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
 import type { Message } from "./chat-view";
-import { CodeexIcon } from "../icons";
 import { Button } from "../ui/button";
 import { Volume2 } from "lucide-react";
 import React, { useEffect } from "react";
 import { textToSpeech } from "@/ai/flows/text-to-speech";
 import { useDoc, useFirestore, useMemoFirebase, useUser } from "@/firebase";
 import { doc } from "firebase/firestore";
+import Image from "next/image";
 
 export function ChatMessage({ message }: { message: Message }) {
     const { user } = useUser();
@@ -71,7 +71,7 @@ export function ChatMessage({ message }: { message: Message }) {
       {message.role === "assistant" && (
         <Avatar className="h-9 w-9 border-2 border-primary/50">
             <div className="bg-primary/20 h-full w-full flex items-center justify-center">
-                <CodeexIcon className="h-6 w-6 text-primary"/>
+                <Image src="/favicon.ico" alt="CODEEX AI Logo" width={24} height={24} className="h-6 w-6" />
             </div>
         </Avatar>
       )}
