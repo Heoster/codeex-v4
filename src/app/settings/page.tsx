@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -23,7 +23,7 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import { useUser, useFirestore, useDoc, useMemoFirebase } from '@/firebase';
+import { useUser, useFirestore, useDoc, useMemoFirebase, errorEmitter, FirestorePermissionError } from '@/firebase';
 import { doc, setDoc } from 'firebase/firestore';
 import { toast } from '@/hooks/use-toast';
 
@@ -83,20 +83,20 @@ export default function SettingsPage() {
     if (!userDocRef) return;
 
     setDoc(userDocRef, data, { merge: true })
-        .then(() => {
-            toast({
-                title: 'Profile updated',
-                description: 'Your profile has been successfully updated.',
-            });
-        })
-        .catch((error) => {
-            console.error('Error updating profile:', error);
-            toast({
-                title: 'Error',
-                description: 'There was an error updating your profile.',
-                variant: 'destructive',
-            });
+      .then(() => {
+        toast({
+          title: 'Profile updated',
+          description: 'Your profile has been successfully updated.',
         });
+      })
+      .catch((serverError) => {
+        const permissionError = new FirestorePermissionError({
+            path: userDocRef.path,
+            operation: 'update',
+            requestResourceData: data,
+        });
+        errorEmitter.emit('permission-error', permissionError);
+      });
   }
 
   return (

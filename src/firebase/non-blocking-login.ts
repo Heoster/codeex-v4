@@ -10,6 +10,7 @@ import {
 import { toast } from '@/hooks/use-toast';
 import { doc, setDoc } from 'firebase/firestore';
 import { getFirestore } from 'firebase/firestore';
+import { errorEmitter, FirestorePermissionError } from '@/firebase';
 
 async function createUserProfile(user: User) {
     const firestore = getFirestore(user.app);
@@ -22,7 +23,15 @@ async function createUserProfile(user: User) {
         creationTimestamp: new Date().toISOString(),
         lastLoginTimestamp: new Date().toISOString(),
     };
-    await setDoc(userDocRef, userData, { merge: true });
+    
+    setDoc(userDocRef, userData, { merge: true }).catch((serverError) => {
+        const permissionError = new FirestorePermissionError({
+            path: userDocRef.path,
+            operation: 'create',
+            requestResourceData: userData,
+        });
+        errorEmitter.emit('permission-error', permissionError);
+    });
 }
 
 
@@ -66,7 +75,16 @@ export function initiateEmailSignIn(authInstance: Auth, email: string, password:
     if (userCredential.user) {
         const firestore = getFirestore(userCredential.user.app);
         const userDocRef = doc(firestore, 'users', userCredential.user.uid);
-        await setDoc(userDocRef, { lastLoginTimestamp: new Date().toISOString() }, { merge: true });
+        const updateData = { lastLoginTimestamp: new Date().toISOString() };
+        setDoc(userDocRef, updateData, { merge: true })
+            .catch((serverError) => {
+                const permissionError = new FirestorePermissionError({
+                    path: userDocRef.path,
+                    operation: 'update',
+                    requestResourceData: updateData,
+                });
+                errorEmitter.emit('permission-error', permissionError);
+            });
     }
   })
     .catch((error) => {
