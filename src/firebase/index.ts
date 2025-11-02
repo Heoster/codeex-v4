@@ -2,9 +2,8 @@
 
 import { firebaseConfig } from '@/firebase/config';
 import { initializeApp, getApps, getApp, FirebaseApp } from 'firebase/app';
-import { getAuth, setPersistence, browserLocalPersistence } from 'firebase/auth';
+import { getAuth } from 'firebase/auth';
 import { getFirestore } from 'firebase/firestore'
-import { useUser as useAuthUser } from './auth/use-user';
 
 // IMPORTANT: DO NOT MODIFY THIS FUNCTION
 export function initializeFirebase() {
@@ -34,13 +33,9 @@ export function initializeFirebase() {
 }
 
 export function getSdks(firebaseApp: FirebaseApp) {
-  const auth = getAuth(firebaseApp);
-  // Set auth persistence to local
-  setPersistence(auth, browserLocalPersistence);
-  
   return {
     firebaseApp,
-    auth,
+    auth: getAuth(firebaseApp),
     firestore: getFirestore(firebaseApp)
   };
 }
@@ -53,5 +48,3 @@ export * from './non-blocking-updates';
 export * from './non-blocking-login';
 export * from './errors';
 export * from './error-emitter';
-
-export const useUser = useAuthUser;
