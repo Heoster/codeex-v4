@@ -48,11 +48,12 @@ export function initiateEmailSignUp(authInstance: Auth, email: string, password:
     .then(async (userCredential) => {
         if (userCredential.user) {
             await updateProfile(userCredential.user, { displayName });
+            // We need to create the user profile document in Firestore
             await createUserProfile(userCredential.user);
-            // Simulate sending a welcome email
+            
             toast({
               title: "Welcome to CODEEX AI!",
-              description: "A welcome email has been sent to your address."
+              description: "Your account has been created successfully."
             });
         }
     })
@@ -81,6 +82,8 @@ export function initiateEmailSignIn(authInstance: Auth, email: string, password:
         const firestore = getFirestore(userCredential.user.app);
         const userDocRef = doc(firestore, 'users', userCredential.user.uid);
         const updateData = { lastLoginTimestamp: new Date().toISOString() };
+        
+        // Update the last login timestamp
         setDoc(userDocRef, updateData, { merge: true })
             .catch((serverError) => {
                 const permissionError = new FirestorePermissionError({
