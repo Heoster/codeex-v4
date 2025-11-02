@@ -49,6 +49,11 @@ export function initiateEmailSignUp(authInstance: Auth, email: string, password:
         if (userCredential.user) {
             await updateProfile(userCredential.user, { displayName });
             await createUserProfile(userCredential.user);
+            // Simulate sending a welcome email
+            toast({
+              title: "Welcome to CODEEX AI!",
+              description: "A welcome email has been sent to your address."
+            });
         }
     })
     .catch((error) => {

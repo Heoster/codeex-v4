@@ -6,6 +6,7 @@ import {
   BotMessageSquare,
   History,
   LayoutDashboard,
+  Mail,
   Settings,
   Shapes,
 } from "lucide-react";
@@ -33,6 +34,7 @@ const mainMenuItems = [
 
 const secondaryMenuItems = [
     { href: "/history", label: "All Chats", icon: History },
+    { href: "/contact", label: "Contact", icon: Mail },
     { href: "/settings", label: "Settings", icon: Settings },
 ]
 
