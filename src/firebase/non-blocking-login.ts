@@ -38,12 +38,14 @@ async function createUserProfile(user: User) {
 }
 
 function handleAuthError(error: any) {
-    if (error.code === 'auth/cancelled-popup-request') {
-        // Don't show an error toast if the user simply cancels the popup.
-        return;
+    // Gracefully handle cases where the user cancels the popup or an internal assertion fails.
+    // These are not critical errors and should not disrupt the user experience.
+    if (
+      error.code === 'auth/cancelled-popup-request' ||
+      error.message.includes('INTERNAL ASSERTION FAILED')
+    ) {
+      return;
     }
-
-    console.error("Authentication Error:", error);
     
     if (error.code === 'auth/operation-not-allowed' || error.code === 'auth/configuration-not-found') {
         toast({
