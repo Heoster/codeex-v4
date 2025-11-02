@@ -27,6 +27,14 @@ export default function ChatLayout({
   useEffect(() => {
     // If we are on /chat, redirect to the user's default chat
     if (user && pathname === '/chat') {
+        const storedChats = localStorage.getItem(`chatHistory_${user.uid}`);
+        if (storedChats) {
+            const chats = JSON.parse(storedChats);
+            if (chats.length > 0) {
+                router.replace(`/chat/${chats.sort((a:any,b:any) => b.timestamp - a.timestamp)[0].id}`);
+                return;
+            }
+        }
         router.replace(`/chat/${user.uid}`);
     }
   }, [user, router, pathname]);

@@ -2,13 +2,12 @@
 
 import React, { useEffect, useState, useRef } from 'react';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { ChatMessage } from './chat-message';
-import { ChatInput } from './chat-input';
+import { ChatMessage } from '@/components/chat/chat-message';
+import { ChatInput } from '@/components/chat/chat-input';
 import { answerQuestionsWithLiveInfo } from '@/ai/flows/answer-questions-live-info';
-import { useChatMode } from './chat-mode-provider';
-import { adjustResponseTone } from '@/ai/flows/adjust-response-tone';
+import { useChatMode } from '@/components/chat/chat-mode-provider';
 import { useUser } from '@/firebase';
-import { useChatHistory } from './chat-history-provider';
+import { useChatHistory } from '@/components/chat/chat-history-provider';
 
 export type Message = {
   id: string;
@@ -21,7 +20,7 @@ export function ChatView({ chatId }: { chatId: string }) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
-  const { mode, getSystemPrompt } = useChatMode();
+  const { getSystemPrompt } = useChatMode();
   const { getChatTitle, renameChat } = useChatHistory();
 
   // Load messages from local storage when the component mounts or chatId/user changes
@@ -49,32 +48,6 @@ export function ChatView({ chatId }: { chatId: string }) {
     }
   }, [messages, chatId, user]);
 
-
-  useEffect(() => {
-    async function setInitialTone() {
-        const title = getChatTitle(chatId);
-        // Do not reset messages if they already exist for this chat
-        if (messages.length > 1 || (messages.length === 1 && messages[0].id !== '1')) return;
-
-      const welcomeMessage = `Greetings! I am CODEEX AI. This is the start of your conversation in "${title}". How may I assist you today?`;
-      const tone = mode === 'magical' ? 'whimsical and enchanting' : mode === 'jarvis' ? 'formal and professional' : 'like a CLI';
-
-      const adjustedResponse = await adjustResponseTone({
-          responseText: welcomeMessage,
-          tone: tone,
-      });
-
-      setMessages([
-        {
-          id: '1',
-          role: 'assistant',
-          content: adjustedResponse.adjustedResponseText,
-        },
-      ]);
-    }
-    setInitialTone();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [mode, chatId, getChatTitle]);
 
   const handleSend = async (content: string) => {
     const userMessage: Message = {
