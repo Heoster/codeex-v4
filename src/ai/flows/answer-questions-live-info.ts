@@ -13,6 +13,7 @@ import {z} from 'genkit';
 
 const AnswerQuestionsWithLiveInfoInputSchema = z.object({
   query: z.string().describe('The question to answer using live internet information.'),
+  systemPrompt: z.string().optional().describe('An optional system prompt to guide the AI\'s persona and response style.'),
 });
 export type AnswerQuestionsWithLiveInfoInput = z.infer<
   typeof AnswerQuestionsWithLiveInfoInputSchema
@@ -35,6 +36,7 @@ const prompt = ai.definePrompt({
   name: 'answerQuestionsWithLiveInfoPrompt',
   input: {schema: AnswerQuestionsWithLiveInfoInputSchema},
   output: {schema: AnswerQuestionsWithLiveInfoOutputSchema},
+  system: `{{{systemPrompt}}}`,
   prompt: `You are an AI assistant that answers questions.
 
   Question: {{{query}}}

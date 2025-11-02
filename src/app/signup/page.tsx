@@ -125,6 +125,12 @@ export default function SignupPage() {
                         </div>
                     </CardContent>
                 </Card>
+                <div className="text-center text-sm text-muted-foreground">
+                    By signing up, you agree to our{" "}
+                    <Link href="/terms" className="underline">
+                        Terms and Conditions
+                    </Link>
+                </div>
             </div>
       </div>
     </div>

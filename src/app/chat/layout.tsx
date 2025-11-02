@@ -6,6 +6,7 @@ import { AppSidebar } from "@/components/app-sidebar";
 import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
+import { ChatModeProvider } from "@/components/chat/chat-mode-provider";
 
 function generateChatId() {
     return Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
@@ -43,16 +44,18 @@ export default function ChatLayout({
 
 
   return (
-    <SidebarProvider>
-        <div className="min-h-screen">
-            <AppSidebar />
-            <SidebarInset>
-                <AppHeader />
-                <main className="h-[calc(100vh-4rem)]">
-                    {children}
-                </main>
-            </SidebarInset>
-        </div>
-    </SidebarProvider>
+    <ChatModeProvider>
+        <SidebarProvider>
+            <div className="min-h-screen">
+                <AppSidebar />
+                <SidebarInset>
+                    <AppHeader />
+                    <main className="h-[calc(100vh-4rem)]">
+                        {children}
+                    </main>
+                </SidebarInset>
+            </div>
+        </SidebarProvider>
+    </ChatModeProvider>
   );
 }

@@ -121,6 +121,12 @@ export default function LoginPage() {
               </div>
             </CardContent>
           </Card>
+           <div className="text-center text-sm text-muted-foreground">
+              By signing in, you agree to our{" "}
+              <Link href="/terms" className="underline">
+                Terms and Conditions
+              </Link>
+            </div>
         </div>
       </div>
     </div>
