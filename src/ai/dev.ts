@@ -10,3 +10,5 @@ import '@/ai/flows/summarize-documents.ts';
 import '@/ai/flows/summarize-uploaded-files.ts';
 import '@/ai/flows/view-and-reuse-prompts.ts';
 import '@/ai/flows/context-aware-recommendations.ts';
+import '@/ai/flows/text-to-speech.ts';
+import '@/ai/flows/solve-quiz-or-calc.ts';

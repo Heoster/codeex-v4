@@ -8,7 +8,6 @@ import {
   LayoutDashboard,
   Settings,
   Shapes,
-  User,
 } from "lucide-react";
 
 import {
@@ -19,19 +18,23 @@ import {
   SidebarMenuItem,
   SidebarMenuButton,
   SidebarFooter,
+  SidebarSeparator,
 } from "@/components/ui/sidebar";
 import { Logo } from "@/components/logo";
 import { UserNav } from "@/components/user-nav";
-import { Separator } from "./ui/separator";
 import { useUser } from "@/firebase";
+import { NewChatButton } from "./new-chat-button";
+import { ChatHistory } from "./chat/chat-history";
 
-const menuItems = [
-  { href: "/chat", label: "Chat", icon: BotMessageSquare },
+const mainMenuItems = [
   { href: "/tools", label: "Tools", icon: Shapes },
-  { href: "/history", label: "History", icon: History },
   { href: "/learning", label: "Learning Paths", icon: LayoutDashboard },
-  { href: "/settings", label: "Settings", icon: Settings },
 ];
+
+const secondaryMenuItems = [
+    { href: "/history", label: "All Chats", icon: History },
+    { href: "/settings", label: "Settings", icon: Settings },
+]
 
 export function AppSidebar() {
   const pathname = usePathname();
@@ -42,13 +45,16 @@ export function AppSidebar() {
       <SidebarHeader>
         <Logo />
       </SidebarHeader>
-      <SidebarContent>
+      <SidebarContent className="flex flex-col">
+        <div className="p-2">
+            <NewChatButton />
+        </div>
         <SidebarMenu>
-          {menuItems.map((item) => (
+          {mainMenuItems.map((item) => (
             <SidebarMenuItem key={item.href}>
               <Link href={item.href}>
                 <SidebarMenuButton
-                  isActive={pathname === item.href}
+                  isActive={pathname.startsWith(item.href)}
                   tooltip={item.label}
                 >
                   <item.icon />
@@ -58,18 +64,31 @@ export function AppSidebar() {
             </SidebarMenuItem>
           ))}
         </SidebarMenu>
+
+        <ChatHistory />
+
+        <div className="mt-auto">
+            <SidebarMenu>
+            {secondaryMenuItems.map((item) => (
+                <SidebarMenuItem key={item.href}>
+                <Link href={item.href}>
+                    <SidebarMenuButton
+                    isActive={pathname.startsWith(item.href)}
+                    tooltip={item.label}
+                    >
+                    <item.icon />
+                    <span>{item.label}</span>
+                    </SidebarMenuButton>
+                </Link>
+                </SidebarMenuItem>
+            ))}
+            </SidebarMenu>
+        </div>
+        
       </SidebarContent>
       <SidebarFooter>
-        <Separator className="my-2" />
-        <div className="hidden flex-col gap-2 p-2 group-data-[state=expanded]:flex">
-            <div className="flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium">
-                <UserNav />
-                <div className="flex flex-col">
-                    <span className="font-medium">{user?.displayName || 'User'}</span>
-                    <span className="text-xs text-muted-foreground">{user?.email || 'user@example.com'}</span>
-                </div>
-            </div>
-        </div>
+        <SidebarSeparator />
+        <UserNav />
       </SidebarFooter>
     </Sidebar>
   );

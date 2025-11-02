@@ -16,6 +16,7 @@ import { PlaceHolderImages } from '@/lib/placeholder-images';
 import { LogOut, Settings, User as UserIcon } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { ThemeSwitcher } from './theme-switcher';
 
 export function UserNav() {
   const userAvatar = PlaceHolderImages.find((p) => p.id === 'user-avatar');
@@ -74,6 +75,10 @@ export function UserNav() {
             </DropdownMenuItem>
           </Link>
         </DropdownMenuGroup>
+        <DropdownMenuSeparator />
+        <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
+            <ThemeSwitcher />
+        </DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuItem onClick={handleSignOut}>
           <LogOut className="mr-2 h-4 w-4" />

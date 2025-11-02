@@ -7,6 +7,7 @@ import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
 import { useRouter, usePathname } from "next/navigation";
 import { useEffect } from "react";
 import { ChatModeProvider } from "@/components/chat/chat-mode-provider";
+import { ChatHistoryProvider } from "@/components/chat/chat-history-provider";
 
 export default function ChatLayout({
   children,
@@ -40,6 +41,7 @@ export default function ChatLayout({
 
   return (
     <ChatModeProvider>
+      <ChatHistoryProvider>
         <SidebarProvider>
             <div className="min-h-screen">
                 <AppSidebar />
@@ -51,6 +53,7 @@ export default function ChatLayout({
                 </SidebarInset>
             </div>
         </SidebarProvider>
+      </ChatHistoryProvider>
     </ChatModeProvider>
   );
 }

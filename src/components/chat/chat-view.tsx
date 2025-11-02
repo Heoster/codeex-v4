@@ -7,6 +7,8 @@ import { ChatInput } from './chat-input';
 import { answerQuestionsWithLiveInfo } from '@/ai/flows/answer-questions-live-info';
 import { useChatMode } from './chat-mode-provider';
 import { adjustResponseTone } from '@/ai/flows/adjust-response-tone';
+import { useUser } from '@/firebase';
+import { useChatHistory } from './chat-history-provider';
 
 export type Message = {
   id: string;
@@ -15,24 +17,43 @@ export type Message = {
 };
 
 export function ChatView({ chatId }: { chatId: string }) {
+  const { user } = useUser();
   const [messages, setMessages] = useState<Message[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const scrollAreaRef = React.useRef<HTMLDivElement>(null);
   const { mode, getSystemPrompt } = useChatMode();
+  const { getChatTitle } = useChatHistory();
 
+  // Load messages from local storage when the component mounts or chatId/user changes
   useEffect(() => {
-    const initialMessage: Message = {
-      id: '1',
-      role: 'assistant',
-      content:
-        'Greetings! I am CODEEX AI, your magical companion. How may I assist you today?',
-    };
-    setMessages([initialMessage]);
-  }, [chatId]);
+    if (user && chatId) {
+      const storedMessages = localStorage.getItem(`chat_${chatId}`);
+      if (storedMessages) {
+        setMessages(JSON.parse(storedMessages));
+      } else {
+        const welcomeMessage: Message = {
+          id: '1',
+          role: 'assistant',
+          content: `Greetings! I am CODEEX AI. This is the start of your conversation in "${getChatTitle(chatId)}". How may I assist you today?`,
+        };
+        setMessages([welcomeMessage]);
+      }
+    }
+  }, [chatId, user, getChatTitle]);
+
+
+  // Save messages to local storage whenever they change
+  useEffect(() => {
+    if (user && chatId && messages.length > 0) {
+      localStorage.setItem(`chat_${chatId}`, JSON.stringify(messages));
+    }
+  }, [messages, chatId, user]);
+
 
   useEffect(() => {
     async function setInitialTone() {
-      const welcomeMessage = "Greetings! I am CODEEX AI, your magical companion. How may I assist you today?";
+        const title = getChatTitle(chatId);
+      const welcomeMessage = `Greetings! I am CODEEX AI. This is the start of your conversation in "${title}". How may I assist you today?`;
       const tone = mode === 'magical' ? 'whimsical and enchanting' : mode === 'jarvis' ? 'formal and professional' : 'like a CLI';
 
       const adjustedResponse = await adjustResponseTone({
@@ -48,8 +69,12 @@ export function ChatView({ chatId }: { chatId: string }) {
         },
       ]);
     }
-    setInitialTone();
-  }, [mode]);
+    // Only run if there are no messages yet
+    if (messages.length === 0) {
+        setInitialTone();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [mode, chatId, getChatTitle]);
 
   const handleSend = async (content: string) => {
     const userMessage: Message = {
