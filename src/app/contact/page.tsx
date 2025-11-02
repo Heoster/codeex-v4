@@ -45,7 +45,7 @@ export default function ContactPage() {
         <CardHeader>
           <CardTitle>Contact Us</CardTitle>
           <CardDescription>
-            Have a question or feedback? Fill out the form below to get in touch.
+            Have a question or feedback? Your message will be sent to codeex.care@gmail.com.
           </CardDescription>
         </CardHeader>
         <CardContent>
