@@ -7,6 +7,10 @@ import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 
+function generateChatId() {
+    return Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+}
+
 export default function ChatLayout({
   children,
 }: {
@@ -28,6 +32,15 @@ export default function ChatLayout({
       </div>
     );
   }
+
+  // If we are on /chat, redirect to a new chat
+  useEffect(() => {
+    if (user && window.location.pathname === '/chat') {
+        const newChatId = generateChatId();
+        router.replace(`/chat/${newChatId}`);
+    }
+  }, [user, router]);
+
 
   return (
     <SidebarProvider>

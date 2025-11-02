@@ -20,7 +20,7 @@ export default function SignupPage() {
     const router = useRouter();
     const [email, setEmail] = React.useState('');
     const [password, setPassword] = React.useState('');
-    const [fullName, setFullName] = React.useState('');
+    const [displayName, setDisplayName] = React.useState('');
 
     const handleGoogleSignIn = async () => {
         if (!auth) return;
@@ -35,12 +35,12 @@ export default function SignupPage() {
     const handleEmailSignUp = (e: React.FormEvent) => {
         e.preventDefault();
         if (!auth) return;
-        initiateEmailSignUp(auth, email, password);
+        initiateEmailSignUp(auth, email, password, displayName);
     };
 
     useEffect(() => {
         if (!isUserLoading && user) {
-          router.push('/chat');
+          router.push(`/chat/${user.uid}`);
         }
     }, [user, isUserLoading, router]);
 
@@ -78,13 +78,13 @@ export default function SignupPage() {
                         <form onSubmit={handleEmailSignUp}>
                             <div className="grid gap-4">
                                 <div className="grid gap-2">
-                                    <Label htmlFor="full-name">Full name</Label>
+                                    <Label htmlFor="full-name">Display Name</Label>
                                     <Input 
                                         id="full-name" 
                                         placeholder="Merlin" 
                                         required 
-                                        value={fullName}
-                                        onChange={(e) => setFullName(e.target.value)}
+                                        value={displayName}
+                                        onChange={(e) => setDisplayName(e.target.value)}
                                     />
                                 </div>
                                 <div className="grid gap-2">
@@ -105,6 +105,7 @@ export default function SignupPage() {
                                         type="password"
                                         value={password}
                                         onChange={(e) => setPassword(e.target.value)}
+                                        required
                                      />
                                 </div>
                                 <Button type="submit" className="w-full" variant="premium">

@@ -1,6 +1,7 @@
 import { ModeSwitcher } from "@/components/mode-switcher";
 import { UserNav } from "@/components/user-nav";
 import { SidebarTrigger } from "@/components/ui/sidebar";
+import { NewChatButton } from "./new-chat-button";
 
 export function AppHeader() {
   return (
@@ -8,9 +9,12 @@ export function AppHeader() {
       <div className="md:hidden">
         <SidebarTrigger />
       </div>
-      <div className="flex w-full items-center justify-end gap-4">
-        <ModeSwitcher />
-        <UserNav />
+      <div className="flex w-full items-center justify-between">
+        <NewChatButton />
+        <div className="flex items-center gap-4">
+            <ModeSwitcher />
+            <UserNav />
+        </div>
       </div>
     </header>
   );

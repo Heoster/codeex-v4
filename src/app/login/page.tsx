@@ -38,7 +38,7 @@ export default function LoginPage() {
 
   useEffect(() => {
     if (!isUserLoading && user) {
-      router.push('/chat');
+      router.push(`/chat/${user.uid}`);
     }
   }, [user, isUserLoading, router]);
 

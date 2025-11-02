@@ -1,9 +1,10 @@
 "use client";
 
-import React from "react";
+import React, { useEffect } from "react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { ChatMessage } from "./chat-message";
 import { ChatInput } from "./chat-input";
+import { answerQuestionsWithLiveInfo } from "@/ai/flows/answer-questions-live-info";
 
 export type Message = {
   id: string;
@@ -11,28 +12,33 @@ export type Message = {
   content: string;
 };
 
-const initialMessages: Message[] = [
-    { id: "1", role: "assistant", content: "Greetings! I am CODEEX AI, your magical companion. How may I assist you today?" },
-    { id: "2", role: "user", content: "Explain the concept of quantum entanglement in simple terms." },
-    { id: "3", role: "assistant", content: "Of course! Imagine you have two magical, linked coins. No matter how far apart they are, if one lands on heads, the other will instantly land on tails. That's the essence of quantum entanglement – two particles linked in a way that their fates are intertwined, even across vast distances. Spooky, yet enchanting!" },
-];
-
-export function ChatView() {
-  const [messages, setMessages] = React.useState<Message[]>(initialMessages);
+export function ChatView({ chatId }: { chatId: string }) {
+  const [messages, setMessages] = React.useState<Message[]>([]);
   const [isLoading, setIsLoading] = React.useState(false);
   const scrollAreaRef = React.useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const initialMessage: Message = { id: "1", role: "assistant", content: "Greetings! I am CODEEX AI, your magical companion. How may I assist you today?" };
+    setMessages([initialMessage]);
+  }, [chatId]);
+
 
   const handleSend = async (content: string) => {
     const userMessage: Message = { id: Date.now().toString(), role: "user", content };
     setMessages(prev => [...prev, userMessage]);
     setIsLoading(true);
 
-    // Simulate AI response
-    setTimeout(() => {
-        const aiMessage: Message = { id: (Date.now() + 1).toString(), role: "assistant", content: "Thinking with my magic wand... one moment." };
+    try {
+        const response = await answerQuestionsWithLiveInfo({ query: content });
+        const aiMessage: Message = { id: (Date.now() + 1).toString(), role: "assistant", content: response.answer };
         setMessages(prev => [...prev, aiMessage]);
+    } catch (error) {
+        console.error("Error getting AI response:", error);
+        const errorMessage: Message = { id: (Date.now() + 1).toString(), role: "assistant", content: "Sorry, I encountered a bit of magical interference. Please try again." };
+        setMessages(prev => [...prev, errorMessage]);
+    } finally {
         setIsLoading(false);
-    }, 1500);
+    }
   };
   
   React.useEffect(() => {
