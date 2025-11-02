@@ -146,6 +146,10 @@ export function initiateGoogleSignIn(auth: Auth): void {
       }
     })
     .catch((error) => {
+      // Don't show an error toast if the user simply cancels the popup.
+      if (error.code === 'auth/cancelled-popup-request') {
+        return;
+      }
       console.error("Google Sign-In Error", error);
       toast({
         title: "Google Sign-In Failed",
