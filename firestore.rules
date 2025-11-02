@@ -1,188 +1,21 @@
-/**
- * @fileoverview Firestore Security Rules for the CODEEX AI application.
- *
- * Core Philosophy:
- * This ruleset enforces a strict user-ownership model.  Each user can only
- * access data explicitly associated with their user ID. This prevents
- * unauthorized data access and ensures privacy.
- *
- * Data Structure:
- * All data is nested under /users/{userId}, where {userId} corresponds to the
- * Firebase Authentication UID.  This hierarchical structure simplifies
- * authorization by aligning data access with user identity.  Within each
- * user's data tree, collections like 'conversations', 'learningPaths',
- * 'promptHistory', and 'plugins' store the user's specific data.
- *
- * Key Security Decisions:
- * - User data is strictly isolated. There are no shared documents between users.
- * - Listing other users is disallowed.
- *
- * Authorization Independence:
- * All data is stored under the `/users/{userId}` path. This inherently enforces
- * ownership and avoids the need for complex `get()` calls in security rules to
- * check ownership.
- */
 rules_version = '2';
+
 service cloud.firestore {
   match /databases/{database}/documents {
-
-    /**
-     * @description Checks if the user is signed in.
-     * @path N/A
-     * @allow N/A
-     * @deny N/A
-     * @principle Ensures that only authenticated users can access protected resources.
-     */
-    function isSignedIn() {
-      return request.auth != null;
+    // By default, deny all reads and writes
+    match /{document=**} {
+      allow read, write: if false;
     }
 
-    /**
-     * @description Checks if the requested user ID matches the authenticated user's ID.
-     * @path N/A
-     * @allow N/A
-     * @deny N/A
-     * @principle Enforces that users can only access their own data.
-     */
-    function isOwner(userId) {
-      return isSignedIn() && request.auth.uid == userId;
+    // Allow users to read and write their own data
+    match /users/{userId}/{allPaths=**} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
     }
 
-    /**
-     * @description Checks if the user is the owner of the existing document.
-     * @path N/A
-     * @allow N/A
-     * @deny N/A
-     * @principle Prevents modification or deletion of non-existent documents and enforces ownership.
-     */
-    function isExistingOwner(userId) {
-      return isOwner(userId) && resource != null;
-    }
-
-    /**
-     * @description Rules for user profile data.
-     * @path /users/{userId}
-     * @allow (create) - User with UID 'user_abc' can create their own profile.
-     * @deny (create) - User with UID 'user_xyz' cannot create a profile for 'user_abc'.
-     * @allow (get) - User with UID 'user_abc' can read their own profile.
-     * @deny (get) - User with UID 'user_xyz' cannot read the profile for 'user_abc'.
-     * @principle Enforces document ownership for writes and reads.
-     */
+    // Allow users to create their own user document
     match /users/{userId} {
-      allow get: if isOwner(userId);
-      allow list: if false;
-
-      allow create: if isOwner(userId) && request.resource.data.id == userId;
-      allow update: if isExistingOwner(userId) && request.resource.data.id == resource.data.id;
-      allow delete: if isExistingOwner(userId);
-    }
-
-    /**
-     * @description Rules for conversations within a user's profile.
-     * @path /users/{userId}/conversations/{conversationId}
-     * @allow (create) - User with UID 'user_abc' can create a conversation under their profile.
-     * @deny (create) - User with UID 'user_xyz' cannot create a conversation under 'user_abc'.
-     * @allow (get) - User with UID 'user_abc' can read their own conversation.
-     * @deny (get) - User with UID 'user_xyz' cannot read the conversation for 'user_abc'.
-     * @principle Enforces document ownership for reads and writes.
-     */
-    match /users/{userId}/conversations/{conversationId} {
-      allow get: if isOwner(userId);
-      allow list: if isOwner(userId);
-
-      allow create: if isOwner(userId) && request.resource.data.userId == userId;
-      allow update: if isExistingOwner(userId) && request.resource.data.userId == resource.data.userId;
-      allow delete: if isExistingOwner(userId);
-    }
-
-    /**
-     * @description Rules for chat messages within a conversation.
-     * @path /users/{userId}/conversations/{conversationId}/messages/{messageId}
-     * @allow (create) - User with UID 'user_abc' can create a message within their conversation.
-     * @deny (create) - User with UID 'user_xyz' cannot create a message in 'user_abc's conversation.
-     * @allow (get) - User with UID 'user_abc' can read their own message.
-     * @deny (get) - User with UID 'user_xyz' cannot read the message for 'user_abc'.
-     * @principle Enforces document ownership for reads and writes.
-     */
-    match /users/{userId}/conversations/{conversationId}/messages/{messageId} {
-      allow get: if isOwner(userId);
-      allow list: if isOwner(userId);
-
-      allow create: if isOwner(userId) && request.resource.data.userId == userId;
-      allow update: if isExistingOwner(userId) && request.resource.data.userId == resource.data.userId;
-      allow delete: if isExistingOwner(userId);
-    }
-
-    /**
-     * @description Rules for learning paths within a user's profile.
-     * @path /users/{userId}/learningPaths/{learningPathId}
-     * @allow (create) - User with UID 'user_abc' can create a learning path under their profile.
-     * @deny (create) - User with UID 'user_xyz' cannot create a learning path under 'user_abc'.
-     * @allow (get) - User with UID 'user_abc' can read their own learning path.
-     * @deny (get) - User with UID 'user_xyz' cannot read the learning path for 'user_abc'.
-     * @principle Enforces document ownership for reads and writes.
-     */
-    match /users/{userId}/learningPaths/{learningPathId} {
-      allow get: if isOwner(userId);
-      allow list: if isOwner(userId);
-
-      allow create: if isOwner(userId) && request.resource.data.userId == userId;
-      allow update: if isExistingOwner(userId) && request.resource.data.userId == resource.data.userId;
-      allow delete: if isExistingOwner(userId);
-    }
-
-    /**
-     * @description Rules for learning modules within a learning path.
-     * @path /users/{userId}/learningPaths/{learningPathId}/modules/{learningModuleId}
-     * @allow (create) - User with UID 'user_abc' can create a learning module within their learning path.
-     * @deny (create) - User with UID 'user_xyz' cannot create a learning module in 'user_abc's learning path.
-     * @allow (get) - User with UID 'user_abc' can read their own learning module.
-     * @deny (get) - User with UID 'user_xyz' cannot read the learning module for 'user_abc'.
-     * @principle Enforces document ownership for reads and writes.
-     */
-    match /users/{userId}/learningPaths/{learningPathId}/modules/{learningModuleId} {
-      allow get: if isOwner(userId);
-      allow list: if isOwner(userId);
-
-      allow create: if isOwner(userId) && request.resource.data.learningPathId == learningPathId; //Ensure module is being added to the correct learningPath
-      allow update: if isExistingOwner(userId) && request.resource.data.learningPathId == resource.data.learningPathId;
-      allow delete: if isExistingOwner(userId);
-    }
-
-    /**
-     * @description Rules for prompt history within a user's profile.
-     * @path /users/{userId}/promptHistory/{promptHistoryId}
-     * @allow (create) - User with UID 'user_abc' can create a prompt history entry under their profile.
-     * @deny (create) - User with UID 'user_xyz' cannot create a prompt history entry under 'user_abc'.
-     * @allow (get) - User with UID 'user_abc' can read their own prompt history.
-     * @deny (get) - User with UID 'user_xyz' cannot read the prompt history for 'user_abc'.
-     * @principle Enforces document ownership for reads and writes.
-     */
-    match /users/{userId}/promptHistory/{promptHistoryId} {
-      allow get: if isOwner(userId);
-      allow list: if isOwner(userId);
-
-      allow create: if isOwner(userId) && request.resource.data.userId == userId;
-      allow update: if isExistingOwner(userId) && request.resource.data.userId == resource.data.userId;
-      allow delete: if isExistingOwner(userId);
-    }
-
-    /**
-     * @description Rules for plugins installed by a user.
-     * @path /users/{userId}/plugins/{pluginId}
-     * @allow (create) - User with UID 'user_abc' can create a plugin under their profile.
-     * @deny (create) - User with UID 'user_xyz' cannot create a plugin under 'user_abc'.
-     * @allow (get) - User with UID 'user_abc' can read their own plugin.
-     * @deny (get) - User with UID 'user_xyz' cannot read the plugin for 'user_abc'.
-     * @principle Enforces document ownership for reads and writes.
-     */
-    match /users/{userId}/plugins/{pluginId} {
-      allow get: if isOwner(userId);
-      allow list: if isOwner(userId);
-
-      allow create: if isOwner(userId) && request.resource.data.userId == userId;
-      allow update: if isExistingOwner(userId) && request.resource.data.userId == resource.data.userId;
-      allow delete: if isExistingOwner(userId);
+      allow create: if request.auth != null && request.auth.uid == userId;
+      allow read, update, delete: if request.auth != null && request.auth.uid == userId;
     }
   }
 }
