@@ -1,293 +1,188 @@
 /**
- * @file Firestore Security Rules
- * @description This ruleset enforces a strict user-ownership model for personal data and employs database-based access control (DBAC) for admin roles.
+ * @fileoverview Firestore Security Rules for the CODEEX AI application.
+ *
+ * Core Philosophy:
+ * This ruleset enforces a strict user-ownership model.  Each user can only
+ * access data explicitly associated with their user ID. This prevents
+ * unauthorized data access and ensures privacy.
  *
  * Data Structure:
- * - User-specific data is nested under /users/{userId}, ensuring only the user can access it.
- * - Admin roles are stored in /roles_admin/{userId}. The existence of a document indicates admin privileges.
- * - Other data, like learning modules and quizzes, are stored in top-level collections with open read access, but write access is restricted.
+ * All data is nested under /users/{userId}, where {userId} corresponds to the
+ * Firebase Authentication UID.  This hierarchical structure simplifies
+ * authorization by aligning data access with user identity.  Within each
+ * user's data tree, collections like 'conversations', 'learningPaths',
+ * 'promptHistory', and 'plugins' store the user's specific data.
  *
  * Key Security Decisions:
- * - User listing is disallowed for privacy.
- * - Admin privileges are determined by the presence of a document in the /roles_admin collection.
- * - Read-only access is granted to learning modules, quizzes, questions, and answers, but writes are disallowed unless further access controls are defined.
+ * - User data is strictly isolated. There are no shared documents between users.
+ * - Listing other users is disallowed.
  *
- * Denormalization for Authorization:
- * - The `userId` is denormalized into subcollection documents under `/users/{userId}` to avoid expensive `get()` calls for authorization.
- *
- * Structural Segregation:
- * - User-specific data (settings, prompt history, plugins) is stored under the `/users/{userId}` path.
- * - Public data (learning modules, quizzes) is stored in top-level collections.
+ * Authorization Independence:
+ * All data is stored under the `/users/{userId}` path. This inherently enforces
+ * ownership and avoids the need for complex `get()` calls in security rules to
+ * check ownership.
  */
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
     /**
-     * @description Checks if the request is authenticated.
+     * @description Checks if the user is signed in.
      * @path N/A
      * @allow N/A
      * @deny N/A
-     * @principle Authentication is required for many operations.
+     * @principle Ensures that only authenticated users can access protected resources.
      */
     function isSignedIn() {
       return request.auth != null;
     }
 
     /**
-     * @description Checks if the request is made by the owner of the resource (i.e., the authenticated user ID matches the provided user ID).
+     * @description Checks if the requested user ID matches the authenticated user's ID.
      * @path N/A
      * @allow N/A
      * @deny N/A
-     * @principle Enforces user-based ownership.
+     * @principle Enforces that users can only access their own data.
      */
     function isOwner(userId) {
       return isSignedIn() && request.auth.uid == userId;
     }
 
     /**
-     * @description Checks if the request is made by the owner of the resource and that the resource already exists.
+     * @description Checks if the user is the owner of the existing document.
      * @path N/A
      * @allow N/A
      * @deny N/A
-     * @principle Enforces user-based ownership and resource existence.
+     * @principle Prevents modification or deletion of non-existent documents and enforces ownership.
      */
     function isExistingOwner(userId) {
       return isOwner(userId) && resource != null;
     }
 
     /**
-     * @description Checks if the requesting user is an admin.
-     * @path N/A
-     * @allow N/A
-     * @deny N/A
-     * @principle Checks admin priviledges based on the /roles_admin collection.
-     */
-     function isAdmin() {
-        return exists(/databases/$(database)/documents/roles_admin/$(request.auth.uid));
-     }
-
-    /**
-     * @description Rule for /users/{userId} documents.
+     * @description Rules for user profile data.
      * @path /users/{userId}
-     * @allow (create) User with ID 'user123' creates their own profile.
-     *     - auth.uid: 'user123'
-     *     - resource.data.id: 'user123'
-     * @deny (create) User with ID 'user123' tries to create a profile for 'user456'.
-     *     - auth.uid: 'user123'
-     *     - resource.data.id: 'user456'
-     * @principle Enforces document ownership for writes.
+     * @allow (create) - User with UID 'user_abc' can create their own profile.
+     * @deny (create) - User with UID 'user_xyz' cannot create a profile for 'user_abc'.
+     * @allow (get) - User with UID 'user_abc' can read their own profile.
+     * @deny (get) - User with UID 'user_xyz' cannot read the profile for 'user_abc'.
+     * @principle Enforces document ownership for writes and reads.
      */
     match /users/{userId} {
       allow get: if isOwner(userId);
-      allow list: if false; // Do not allow listing of all users.
+      allow list: if false;
+
       allow create: if isOwner(userId) && request.resource.data.id == userId;
       allow update: if isExistingOwner(userId) && request.resource.data.id == resource.data.id;
       allow delete: if isExistingOwner(userId);
     }
 
     /**
-     * @description Rule for /users/{userId}/chat_messages/{chatMessageId} documents.
-     * @path /users/{userId}/chat_messages/{chatMessageId}
-     * @allow (create) User with ID 'user123' creates a chat message under their profile.
-     *     - auth.uid: 'user123'
-     *     - resource.data.userId: 'user123'
-     * @deny (update) User with ID 'user123' tries to update a chat message under 'user456's profile.
-     *     - auth.uid: 'user123'
-     *     - resource.data.userId: 'user456'
-     * @principle Enforces document ownership for writes.
+     * @description Rules for conversations within a user's profile.
+     * @path /users/{userId}/conversations/{conversationId}
+     * @allow (create) - User with UID 'user_abc' can create a conversation under their profile.
+     * @deny (create) - User with UID 'user_xyz' cannot create a conversation under 'user_abc'.
+     * @allow (get) - User with UID 'user_abc' can read their own conversation.
+     * @deny (get) - User with UID 'user_xyz' cannot read the conversation for 'user_abc'.
+     * @principle Enforces document ownership for reads and writes.
      */
-    match /users/{userId}/chat_messages/{chatMessageId} {
+    match /users/{userId}/conversations/{conversationId} {
       allow get: if isOwner(userId);
       allow list: if isOwner(userId);
+
       allow create: if isOwner(userId) && request.resource.data.userId == userId;
       allow update: if isExistingOwner(userId) && request.resource.data.userId == resource.data.userId;
       allow delete: if isExistingOwner(userId);
     }
 
     /**
-     * @description Rule for /users/{userId}/conversation_history/{conversationHistoryId} documents.
-     * @path /users/{userId}/conversation_history/{conversationHistoryId}
-     * @allow (create) User with ID 'user123' creates a conversation history under their profile.
-     *     - auth.uid: 'user123'
-     *     - resource.data.userId: 'user123'
-     * @deny (update) User with ID 'user123' tries to update a conversation history under 'user456's profile.
-     *     - auth.uid: 'user123'
-     *     - resource.data.userId: 'user456'
-     * @principle Enforces document ownership for writes.
+     * @description Rules for chat messages within a conversation.
+     * @path /users/{userId}/conversations/{conversationId}/messages/{messageId}
+     * @allow (create) - User with UID 'user_abc' can create a message within their conversation.
+     * @deny (create) - User with UID 'user_xyz' cannot create a message in 'user_abc's conversation.
+     * @allow (get) - User with UID 'user_abc' can read their own message.
+     * @deny (get) - User with UID 'user_xyz' cannot read the message for 'user_abc'.
+     * @principle Enforces document ownership for reads and writes.
      */
-    match /users/{userId}/conversation_history/{conversationHistoryId} {
+    match /users/{userId}/conversations/{conversationId}/messages/{messageId} {
       allow get: if isOwner(userId);
       allow list: if isOwner(userId);
+
       allow create: if isOwner(userId) && request.resource.data.userId == userId;
       allow update: if isExistingOwner(userId) && request.resource.data.userId == resource.data.userId;
       allow delete: if isExistingOwner(userId);
     }
 
     /**
-     * @description Rule for /users/{userId}/learning_paths/{learningPathId} documents.
-     * @path /users/{userId}/learning_paths/{learningPathId}
-     * @allow (create) User with ID 'user123' creates a learning path under their profile.
-     *     - auth.uid: 'user123'
-     *     - resource.data.userId: 'user123'
-     * @deny (update) User with ID 'user123' tries to update a learning path under 'user456's profile.
-     *     - auth.uid: 'user123'
-     *     - resource.data.userId: 'user456'
-     * @principle Enforces document ownership for writes.
+     * @description Rules for learning paths within a user's profile.
+     * @path /users/{userId}/learningPaths/{learningPathId}
+     * @allow (create) - User with UID 'user_abc' can create a learning path under their profile.
+     * @deny (create) - User with UID 'user_xyz' cannot create a learning path under 'user_abc'.
+     * @allow (get) - User with UID 'user_abc' can read their own learning path.
+     * @deny (get) - User with UID 'user_xyz' cannot read the learning path for 'user_abc'.
+     * @principle Enforces document ownership for reads and writes.
      */
-    match /users/{userId}/learning_paths/{learningPathId} {
+    match /users/{userId}/learningPaths/{learningPathId} {
       allow get: if isOwner(userId);
       allow list: if isOwner(userId);
+
       allow create: if isOwner(userId) && request.resource.data.userId == userId;
       allow update: if isExistingOwner(userId) && request.resource.data.userId == resource.data.userId;
       allow delete: if isExistingOwner(userId);
     }
 
     /**
-     * @description Rule for /learning_modules/{learningModuleId} documents.
-     * @path /learning_modules/{learningModuleId}
-     * @allow (get) Any user can read learning modules.
-     * @deny (create) No one can create learning modules without further access control.
-     * @principle Public read access with restricted writes.
+     * @description Rules for learning modules within a learning path.
+     * @path /users/{userId}/learningPaths/{learningPathId}/modules/{learningModuleId}
+     * @allow (create) - User with UID 'user_abc' can create a learning module within their learning path.
+     * @deny (create) - User with UID 'user_xyz' cannot create a learning module in 'user_abc's learning path.
+     * @allow (get) - User with UID 'user_abc' can read their own learning module.
+     * @deny (get) - User with UID 'user_xyz' cannot read the learning module for 'user_abc'.
+     * @principle Enforces document ownership for reads and writes.
      */
-    match /learning_modules/{learningModuleId} {
-      allow get: if true;
-      allow list: if true;
-      allow create: if false; // TODO: Add owner validation once the schema is updated with an ownership field.
-      allow update: if false; // TODO: Add owner validation once the schema is updated with an ownership field.
-      allow delete: if false; // TODO: Add owner validation once the schema is updated with an ownership field.
-    }
-
-    /**
-     * @description Rule for /quizzes/{quizId} documents.
-     * @path /quizzes/{quizId}
-     * @allow (get) Any user can read quizzes.
-     * @deny (create) No one can create quizzes without further access control.
-     * @principle Public read access with restricted writes.
-     */
-    match /quizzes/{quizId} {
-      allow get: if true;
-      allow list: if true;
-      allow create: if false; // TODO: Add owner validation once the schema is updated with an ownership field.
-      allow update: if false; // TODO: Add owner validation once the schema is updated with an ownership field.
-      allow delete: if false; // TODO: Add owner validation once the schema is updated with an ownership field.
-    }
-
-    /**
-     * @description Rule for /questions/{questionId} documents.
-     * @path /questions/{questionId}
-     * @allow (get) Any user can read questions.
-     * @deny (create) No one can create questions without further access control.
-     * @principle Public read access with restricted writes.
-     */
-    match /questions/{questionId} {
-      allow get: if true;
-      allow list: if true;
-      allow create: if false; // TODO: Add owner validation once the schema is updated with an ownership field.
-      allow update: if false; // TODO: Add owner validation once the schema is updated with an ownership field.
-      allow delete: if false; // TODO: Add owner validation once the schema is updated with an ownership field.
-    }
-
-    /**
-     * @description Rule for /answers/{answerId} documents.
-     * @path /answers/{answerId}
-     * @allow (get) Any user can read answers.
-     * @deny (create) No one can create answers without further access control.
-     * @principle Public read access with restricted writes.
-     */
-    match /answers/{answerId} {
-      allow get: if true;
-      allow list: if true;
-      allow create: if false; // TODO: Add owner validation once the schema is updated with an ownership field.
-      allow update: if false; // TODO: Add owner validation once the schema is updated with an ownership field.
-      allow delete: if false; // TODO: Add owner validation once the schema is updated with an ownership field.
-    }
-
-    /**
-     * @description Rule for /users/{userId}/settings/{settingId} documents.
-     * @path /users/{userId}/settings/{settingId}
-     * @allow (create) User with ID 'user123' creates a setting under their profile.
-     *     - auth.uid: 'user123'
-     *     - resource.data.userId: 'user123'
-     * @deny (update) User with ID 'user123' tries to update a setting under 'user456's profile.
-     *     - auth.uid: 'user123'
-     *     - resource.data.userId: 'user456'
-     * @principle Enforces document ownership for writes.
-     */
-    match /users/{userId}/settings/{settingId} {
+    match /users/{userId}/learningPaths/{learningPathId}/modules/{learningModuleId} {
       allow get: if isOwner(userId);
       allow list: if isOwner(userId);
+
+      allow create: if isOwner(userId) && request.resource.data.learningPathId == learningPathId; //Ensure module is being added to the correct learningPath
+      allow update: if isExistingOwner(userId) && request.resource.data.learningPathId == resource.data.learningPathId;
+      allow delete: if isExistingOwner(userId);
+    }
+
+    /**
+     * @description Rules for prompt history within a user's profile.
+     * @path /users/{userId}/promptHistory/{promptHistoryId}
+     * @allow (create) - User with UID 'user_abc' can create a prompt history entry under their profile.
+     * @deny (create) - User with UID 'user_xyz' cannot create a prompt history entry under 'user_abc'.
+     * @allow (get) - User with UID 'user_abc' can read their own prompt history.
+     * @deny (get) - User with UID 'user_xyz' cannot read the prompt history for 'user_abc'.
+     * @principle Enforces document ownership for reads and writes.
+     */
+    match /users/{userId}/promptHistory/{promptHistoryId} {
+      allow get: if isOwner(userId);
+      allow list: if isOwner(userId);
+
       allow create: if isOwner(userId) && request.resource.data.userId == userId;
       allow update: if isExistingOwner(userId) && request.resource.data.userId == resource.data.userId;
       allow delete: if isExistingOwner(userId);
     }
 
     /**
-     * @description Rule for /response_ratings/{responseRatingId} documents.
-     * @path /response_ratings/{responseRatingId}
-     * @allow (get) Any user can read response ratings.
-     * @deny (create) No one can create response ratings without further access control.
-     * // CRITICAL: Cannot implement owner-only writes. The 'ResponseRating' entity is missing an 'ownerId' or 'authorId' field.
-     * @principle Public read access with restricted writes.
-     */
-    match /response_ratings/{responseRatingId} {
-      allow get: if true;
-      allow list: if true;
-      allow create, update, delete: if false; // TODO: Add owner validation once the schema is updated with an ownership field.
-    }
-
-    /**
-     * @description Rule for /users/{userId}/prompt_history/{promptHistoryId} documents.
-     * @path /users/{userId}/prompt_history/{promptHistoryId}
-     * @allow (create) User with ID 'user123' creates a prompt history entry under their profile.
-     *     - auth.uid: 'user123'
-     *     - resource.data.userId: 'user123'
-     * @deny (update) User with ID 'user123' tries to update a prompt history entry under 'user456's profile.
-     *     - auth.uid: 'user123'
-     *     - resource.data.userId: 'user456'
-     * @principle Enforces document ownership for writes.
-     */
-    match /users/{userId}/prompt_history/{promptHistoryId} {
-      allow get: if isOwner(userId);
-      allow list: if isOwner(userId);
-      allow create: if isOwner(userId) && request.resource.data.userId == userId;
-      allow update: if isExistingOwner(userId) && request.resource.data.userId == resource.data.userId;
-      allow delete: if isExistingOwner(userId);
-    }
-
-    /**
-     * @description Rule for /users/{userId}/plugins/{pluginId} documents.
+     * @description Rules for plugins installed by a user.
      * @path /users/{userId}/plugins/{pluginId}
-     * @allow (create) User with ID 'user123' creates a plugin under their profile.
-     *     - auth.uid: 'user123'
-     *     - resource.data.userId: 'user123'
-     * @deny (update) User with ID 'user123' tries to update a plugin under 'user456's profile.
-     *     - auth.uid: 'user123'
-     *     - resource.data.userId: 'user456'
-     * @principle Enforces document ownership for writes.
+     * @allow (create) - User with UID 'user_abc' can create a plugin under their profile.
+     * @deny (create) - User with UID 'user_xyz' cannot create a plugin under 'user_abc'.
+     * @allow (get) - User with UID 'user_abc' can read their own plugin.
+     * @deny (get) - User with UID 'user_xyz' cannot read the plugin for 'user_abc'.
+     * @principle Enforces document ownership for reads and writes.
      */
     match /users/{userId}/plugins/{pluginId} {
       allow get: if isOwner(userId);
       allow list: if isOwner(userId);
+
       allow create: if isOwner(userId) && request.resource.data.userId == userId;
       allow update: if isExistingOwner(userId) && request.resource.data.userId == resource.data.userId;
       allow delete: if isExistingOwner(userId);
-    }
-    /**
-     * @description Rule for /roles_admin/{userId} documents.  The existence of a document grants admin access.
-     * @path /roles_admin/{userId}
-     * @allow (create) User with ID 'user123' creates their own admin role (typically done by a privileged process).
-     *     - auth.uid: 'user123'
-     * @deny (create) User with ID 'user123' tries to create an admin role for 'user456'.
-     *     - auth.uid: 'user123'
-     * @principle Database-Based Access Control for admin roles.
-     */
-    match /roles_admin/{userId} {
-        allow get: if isAdmin();
-        allow list: if false; //Admin status should not be listable.
-        allow create: if isAdmin();
-        allow update: if false; // Only privileged process can update
-        allow delete: if isAdmin();
     }
   }
 }
