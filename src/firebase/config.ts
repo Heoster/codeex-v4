@@ -1,8 +1,8 @@
 export const firebaseConfig = {
-  "projectId": "studio-1558286075-e02c9",
-  "appId": "1:606300263082:web:f1467ed6cc0433c19376d3",
-  "apiKey": "AIzaSyAlS1_LB6AVFesy4cD6tfntnh7VuAdtMnE",
-  "authDomain": "studio-1558286075-e02c9.firebaseapp.com",
-  "measurementId": "",
-  "messagingSenderId": "606300263082"
+  "projectId": "codeex-ai-new-project",
+  "appId": "1:852700164485:web:36b1351f873b2c93816e83",
+  "apiKey": "AIzaSyCVnF_5Jz3S5E1-q7E9Yj_j1b3E2y8D8Yw",
+  "authDomain": "codeex-ai-new-project.firebaseapp.com",
+  "storageBucket": "codeex-ai-new-project.appspot.com",
+  "messagingSenderId": "852700164485"
 };

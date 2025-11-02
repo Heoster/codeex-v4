@@ -14,9 +14,7 @@ service cloud.firestore {
 
     // Allow users to create their own user document
     match /users/{userId} {
-      allow create: if request.auth != null && request.auth.uid == userId;
-      allow read, update, delete: if request.auth != null && request.auth.uid == userId;
+      allow create, read, update, delete: if request.auth != null && request.auth.uid == userId;
     }
   }
 }
-    
