@@ -1,0 +1,83 @@
+# **App Name**: CODEEX AI
+
+## Core Features:
+
+- Hyper-Natural Voice Chat: Enables bidirectional voice streaming with minimal latency for a more natural conversation experience.
+- Proactive Notification Summarization: Listens for system notifications and summarizes important ones on demand using an LLM tool.
+- Real-Time Knowledge Engine: Answers questions by actively searching and synthesizing information from the live internet using a search LLM tool.
+- Multi-Turn Contextual Memory: Remembers user preferences, entities, and conversation history across sessions.
+- Multi-Task Command Execution: Deconstructs and executes complex, chained commands by using LLM tool to perform web searches and device integrations.
+- Deep Device Integration: Manages alarms, sets calendar events, initiates calls, and controls basic device settings.
+- Branded Persona: Filters interactions through a magical, student-friendly personality layer using an AI summarization tool for a unique user experience.
+- Smart Summarization: Summarizes long documents or articles into concise bullet points or key takeaways using an AI tool.
+- Context Aware Recommendations: Suggests relevant resources or actions based on the current conversation or task using an LLM tool.
+- Personalized Learning Paths: Creates customized learning paths based on the user's goals and learning style.
+- Background Listening and Wake Up: Continuously listens in the background and wakes up when the trigger phrase is heard.
+- Google Auth via Firebase: Enables user authentication using Google Sign-In through Firebase.
+- Email/Password Auth: Supports user registration and login using email and password.
+- User Settings: Allows users to customize app preferences, privacy settings, and accessibility options.
+- Local Storage for Privacy: Stores chat and conversational history, along with other app settings, in user local storage for enhanced AI privacy.
+- Biometric Auth Support: Fingerprint/Face unlock for mobile devices
+- Session Timeout & Lock Screen: Auto-lock after inactivity with magical re-entry animation
+- Encrypted Local Storage: Mention encryption for privacy-first architecture
+- Response Rating System: Was this helpful? with emoji or star feedback
+- Tone Adjuster: Let users toggle between playful, professional, poetic, etc.
+- Prompt History Viewer: See and reuse past prompts with edit options
+- CLI Mode Enhancements: Terminal-style interface with command chaining, logs, and shortcuts
+- Plugin System: Let users add custom tools or integrations (e.g., Notion, GitHub, Obsidian)
+- API Access: For developers to use Codeex AI in their own apps
+- Progress Tracker: Visualize learning path completion, quiz scores, and milestones
+- Gamified Learning: XP, badges, streaks, and magical level-ups
+- Lesson Templates: Prebuilt modules for teachers to assign or customize
+- Dark Mode: A twilight-themed variant with deep purples and glowing accents
+- Accessibility Features: High contrast mode, screen reader support, font size toggle
+- Custom Themes: Let users choose between “Mystic Forest”, “Cyber Spell”, “Classic Jarvis”
+- Voice Persona Selector: Choose between “Codeex Whisper”, “Jarvis Echo”, “Narrator Owl”
+- Ambient Soundscapes: Optional magical background hums or classroom ambience
+- Voice Command Shortcuts: “Codeex, summarize this”, “Codeex, quiz me”, etc.
+- File Upload & Summarization: Drag-and-drop PDFs, docs, or images for instant summaries
+- Clipboard Watcher: Auto-suggest actions based on copied text
+- Offline Mode: Local-only fallback with grammar, math, and modding tools
+- Codeex Lore: A backstory for Codeex (e.g., a magical AI born from enchanted circuits)
+- Seasonal Themes: Diwali sparkle mode, Winter frost mode, Exam prep mode
+- Easter Eggs: Hidden magical responses or animations triggered by secret phrases
+- Error Handling UX: Friendly fallback messages like “Oops! My wand fizzled. Let’s try again.”
+- Onboarding Flow: Magical walkthrough with animated Codeex avatar guiding new users
+- Privacy Dashboard: Visual overview of stored data, permissions, and memory toggles
+- Multi-Language Support: Hindi/English toggle for Indian classrooms, with regional voice accents
+
+## Style Guidelines:
+
+- A saturated, vibrant purple (#9F5BFF) evokes magic and sophistication, reflecting the AI capabilities.
+- A light gray (#F0F0F0), with a hint of the purple hue, creates a professional yet magical backdrop.
+- A slightly lighter purple (#B28AFF) serves as the accent color, enhancing CTAs and important information without overshadowing the primary color.
+- Headline font: 'Space Grotesk', sans-serif, for a modern and playful aesthetic.
+- Body font: 'Inter', sans-serif, for readability and clear communication.
+- Code font: 'Source Code Pro' for displaying code snippets.
+- Use playful, vibrant icons that reflect a magical theme.
+- Employs a card-based layout for easy content organization and quick scanning. Codeex branding with "Made by HEOSTER" in the footer. A well designed and animated with branding login page
+- Incorporate subtle animations to guide the user and enhance engagement.
+- Theme: Electric Enchantment — a fusion of twilight purples, glowing violets, and calming teals
+- Primary Color: #CBA6FF (Magical Lavender)
+- Accent Colors: #8F00FF (Violet Spark), #B266FF (Glow Accent), #00C896 (Success Teal), #FFB300 (Amber Warning), #FF4F70 (Rose Alert), #5AC8FA (Sky Info)
+- Headline: 'Space Grotesk' — playful, modern
+- Body: 'Inter' — clean, readable
+- Code: 'Source Code Pro' — for CLI and snippets
+- Displays Codeex logo, current mode (Magical, Jarvis, CLI), and user profile in the Top Bar
+- Sidebar / Drawer: Navigation panel with icons for Chat, Tools, History, Settings, and Learning Paths
+- Central Main Chat Window: interaction zone with animated chat bubbles, voice input, and markdown support
+- Tool Dock: Floating panel for quick access to grammar correction, quiz generator, modding assistant, etc.
+- Input field with mic button, emoji picker, and quick action buttons (“Summarize”, “Explain”, “Quiz Me”) in the Bottom Bar
+- Footer: Branded signature: Made by HEOSTER with a glowing glyph or wand icon
+- User Chat Bubbles: White background, indigo border, rounded corners
+- Codeex AI Chat Bubbles: Violet background, white text, sparkle animation on response
+- Cards used for Summaries, Quiz questions, Learning path modules, Notification digests. Style: Soft shadows, rounded edges, hover glow (#EFE0FF overlay)
+- Mic Button: Pulses with #8F00FF glow when active for Voice Interface
+- Voice Output: Magical TTS with animated waveform
+- Wake Word: “Hey Codeex” triggers listening mode with sparkle burst
+- Context-Aware Suggestions: Inline prompts like “Want to visualize this?” or “Need help debugging?”
+- Multi-Turn Memory: Chat history cards with expandable context
+- Learning Path Builder: Drag-and-drop modules with progress rings and goal tracking
+- Chat-first view with swipeable tool drawer on Mobile
+- Split-screen: Chat + Learning/Tool panel on Tablet
+- Full layout with sidebar, top bar, and multi-panel workspace on Desktop
