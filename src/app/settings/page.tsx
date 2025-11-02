@@ -54,7 +54,7 @@ export default function SettingsPage() {
     [firestore, user]
   );
 
-  const { data: userProfile, isLoading } = useDoc<ProfileFormValues>(userDocRef);
+  const { data: userProfile, isLoading } = useDoc<ProfileFormValues & { id: string }>(userDocRef);
 
   const form = useForm<ProfileFormValues>({
     resolver: zodResolver(profileFormSchema),
@@ -80,9 +80,14 @@ export default function SettingsPage() {
   }, [userProfile, user, form]);
 
   function onSubmit(data: ProfileFormValues) {
-    if (!userDocRef) return;
+    if (!userDocRef || !user) return;
+    
+    const updateData = {
+      ...data,
+      id: user.uid, // Ensure the id is always present
+    };
 
-    setDoc(userDocRef, data, { merge: true })
+    setDoc(userDocRef, updateData, { merge: true })
       .then(() => {
         toast({
           title: 'Profile updated',
@@ -93,7 +98,7 @@ export default function SettingsPage() {
         const permissionError = new FirestorePermissionError({
             path: userDocRef.path,
             operation: 'update',
-            requestResourceData: data,
+            requestResourceData: updateData,
         });
         errorEmitter.emit('permission-error', permissionError);
       });
