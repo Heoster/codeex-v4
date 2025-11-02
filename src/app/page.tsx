@@ -47,6 +47,11 @@ const features = [
       title: "Privacy-First Architecture",
       description: "Your data is yours. Conversations are stored securely and locally.",
     },
+     {
+      icon: Star,
+      title: "Explore Features",
+      description: "Discover all the powerful tools and features that Codeex has to offer.",
+    }
   ];
 
 export default function LandingPage() {
@@ -80,10 +85,12 @@ export default function LandingPage() {
                                                 Start Chatting with Codeex
                                             </Button>
                                         </Link>
-                                        <Button variant="outline" size="lg">
-                                            <Wand2 className="mr-2 h-5 w-5" />
-                                            Try a Magical Demo
-                                        </Button>
+                                        <Link href="/demo">
+                                            <Button variant="outline" size="lg">
+                                                <Wand2 className="mr-2 h-5 w-5" />
+                                                Try a Magical Demo
+                                            </Button>
+                                        </Link>
                                     </div>
                                     </div>
                                     <div className="flex flex-col items-center justify-center relative">
@@ -126,11 +133,11 @@ export default function LandingPage() {
                                     </p>
                                 </div>
                                 <div className="flex justify-center space-x-4 mt-4">
-                                    <Link href="#">
-                                    <Button variant="outline">Curriculum Tools</Button>
+                                    <Link href="/tools">
+                                        <Button variant="outline">Curriculum Tools</Button>
                                     </Link>
-                                    <Link href="#">
-                                    <Button variant="outline">Ethical Tech Guides</Button>
+                                    <Link href="/terms">
+                                        <Button variant="outline">Ethical Tech Guides</Button>
                                     </Link>
                                 </div>
                                 </div>

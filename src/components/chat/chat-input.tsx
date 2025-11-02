@@ -20,6 +20,14 @@ export function ChatInput({ onSend, isLoading }: ChatInputProps) {
       setMessage("");
     }
   };
+  
+  const handleQuickAction = (action: string) => {
+    const fullMessage = `${action} the following: ${message}`;
+    if (message.trim()) {
+        onSend(fullMessage);
+        setMessage("");
+    }
+  }
 
   return (
     <div className="p-4 bg-background border-t">
@@ -49,15 +57,15 @@ export function ChatInput({ onSend, isLoading }: ChatInputProps) {
         </form>
       </div>
       <div className="flex items-center gap-2 mt-2">
-        <Button variant="outline" size="sm" className="text-muted-foreground">
+        <Button variant="outline" size="sm" className="text-muted-foreground" onClick={() => handleQuickAction("Summarize")} disabled={!message.trim() || isLoading}>
             <FileText className="mr-2 h-4 w-4"/>
             Summarize
         </Button>
-        <Button variant="outline" size="sm" className="text-muted-foreground">
+        <Button variant="outline" size="sm" className="text-muted-foreground" onClick={() => handleQuickAction("Explain")} disabled={!message.trim() || isLoading}>
             <HelpCircle className="mr-2 h-4 w-4"/>
             Explain
         </Button>
-        <Button variant="outline" size="sm" className="text-muted-foreground">
+        <Button variant="outline" size="sm" className="text-muted-foreground" onClick={() => onSend("Quiz me on a topic of your choice.")} disabled={isLoading}>
             <Sparkles className="mr-2 h-4 w-4"/>
             Quiz Me
         </Button>

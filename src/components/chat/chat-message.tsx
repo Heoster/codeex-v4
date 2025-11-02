@@ -1,6 +1,6 @@
 "use client"
 
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
 import type { Message } from "./chat-view";
 import { Button } from "../ui/button";
@@ -18,7 +18,7 @@ export function ChatMessage({ message }: { message: Message }) {
       () => (firestore && user ? doc(firestore, 'users', user.uid) : null),
       [firestore, user]
     );
-    const { data: userProfile } = useDoc<{ voicePreference?: string }>(userDocRef);
+    const { data: userProfile } = useDoc<{ voicePreference?: string, photoURL?: string }>(userDocRef);
 
     const [audio, setAudio] = React.useState<HTMLAudioElement | null>(null);
     const [isPlaying, setIsPlaying] = React.useState(false);
@@ -84,7 +84,15 @@ export function ChatMessage({ message }: { message: Message }) {
                 : "bg-sidebar text-sidebar-foreground sparkle-animation"
             )}
         >
-            {message.content}
+            {message.content === 'Conjuring a response...' ? (
+                <div className="flex items-center gap-2">
+                    <div className="h-2 w-2 bg-current rounded-full animate-pulse [animation-delay:-0.3s]" />
+                    <div className="h-2 w-2 bg-current rounded-full animate-pulse [animation-delay:-0.15s]" />
+                    <div className="h-2 w-2 bg-current rounded-full animate-pulse" />
+                </div>
+            ) : (
+                message.content
+            )}
         </div>
         {message.role === 'assistant' && (
              <Button
@@ -100,8 +108,11 @@ export function ChatMessage({ message }: { message: Message }) {
 
       {message.role === "user" && (
         <Avatar className="h-9 w-9">
-            <AvatarImage src={user?.photoURL || undefined} alt={user?.displayName || "User"} />
-            <AvatarFallback>{user?.displayName?.[0] || 'U'}</AvatarFallback>
+            {user?.photoURL ? (
+                <Image src={user.photoURL} alt={user.displayName || "User"} width={36} height={36} className="rounded-full" />
+            ) : (
+                <AvatarFallback>{user?.displayName?.[0] || 'U'}</AvatarFallback>
+            )}
         </Avatar>
       )}
     </div>
