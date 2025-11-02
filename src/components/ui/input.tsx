@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import * as React from "react"
 
@@ -14,6 +14,7 @@ const Input = React.forwardRef<HTMLInputElement, React.ComponentProps<"input">>(
           className
         )}
         ref={ref}
+        suppressHydrationWarning
         {...props}
       />
     )
