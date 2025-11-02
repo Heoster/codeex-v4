@@ -23,6 +23,7 @@ import {
 import { Logo } from "@/components/logo";
 import { UserNav } from "@/components/user-nav";
 import { Separator } from "./ui/separator";
+import { useUser } from "@/firebase";
 
 const menuItems = [
   { href: "/chat", label: "Chat", icon: BotMessageSquare },
@@ -34,6 +35,7 @@ const menuItems = [
 
 export function AppSidebar() {
   const pathname = usePathname();
+  const { user } = useUser();
 
   return (
     <Sidebar>
@@ -63,8 +65,8 @@ export function AppSidebar() {
             <div className="flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium">
                 <UserNav />
                 <div className="flex flex-col">
-                    <span className="font-medium">User</span>
-                    <span className="text-xs text-muted-foreground">user@example.com</span>
+                    <span className="font-medium">{user?.displayName || 'User'}</span>
+                    <span className="text-xs text-muted-foreground">{user?.email || 'user@example.com'}</span>
                 </div>
             </div>
         </div>
