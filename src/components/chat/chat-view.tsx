@@ -6,7 +6,6 @@ import { ChatMessage } from './chat-message';
 import { ChatInput } from './chat-input';
 import { answerQuestionsWithLiveInfo } from '@/ai/flows/answer-questions-live-info';
 import { useChatMode } from './chat-mode-provider';
-import { adjustResponseTone } from '@/ai/flows/adjust-response-tone';
 import { useUser } from '@/firebase';
 import { useChatHistory } from './chat-history-provider';
 
@@ -54,21 +53,15 @@ export function ChatView({ chatId }: { chatId: string }) {
     async function setInitialTone() {
         const title = getChatTitle(chatId);
         // Do not reset messages if they already exist for this chat
-        if (messages.length > 1) return;
+        if (messages.length > 1 || (messages.length === 1 && messages[0].id !== '1')) return;
 
       const welcomeMessage = `Greetings! I am CODEEX AI. This is the start of your conversation in "${title}". How may I assist you today?`;
-      const tone = mode === 'magical' ? 'whimsical and enchanting' : mode === 'jarvis' ? 'formal and professional' : 'like a CLI';
-
-      const adjustedResponse = await adjustResponseTone({
-          responseText: welcomeMessage,
-          tone: tone,
-      });
-
+      
       setMessages([
         {
           id: '1',
           role: 'assistant',
-          content: adjustedResponse.adjustedResponseText,
+          content: welcomeMessage,
         },
       ]);
     }
@@ -94,20 +87,16 @@ export function ChatView({ chatId }: { chatId: string }) {
     setIsLoading(true);
 
     try {
-      // First get the base answer
-      const response = await answerQuestionsWithLiveInfo({ query: content, systemPrompt: getSystemPrompt() });
-      
-      // Then adjust the tone
-      const tone = mode === 'magical' ? 'whimsical and enchanting' : mode === 'jarvis' ? 'formal and professional' : 'like a CLI';
-      const adjustedResponse = await adjustResponseTone({
-          responseText: response.answer,
-          tone: tone,
+      // Get the answer from the AI in the correct tone directly.
+      const response = await answerQuestionsWithLiveInfo({ 
+        query: content, 
+        systemPrompt: getSystemPrompt() 
       });
 
       const aiMessage: Message = {
         id: (Date.now() + 1).toString(),
         role: 'assistant',
-        content: adjustedResponse.adjustedResponseText,
+        content: response.answer,
       };
       setMessages((prev) => [...prev, aiMessage]);
     } catch (error) {

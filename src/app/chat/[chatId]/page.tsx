@@ -1,6 +1,6 @@
-'use client';
-import { ChatView } from "@/components/chat/chat-view";
+import { ChatView } from "@/app/chat/chat-view";
 
-export default function ChatPage({ params }: { params: { chatId: string } }) {
-    return <ChatView chatId={params.chatId} />;
+export default async function ChatPage({ params }: { params: Promise<{ chatId: string }> }) {
+    const { chatId } = await params;
+    return <ChatView chatId={chatId} />;
 }
