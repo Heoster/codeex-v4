@@ -42,7 +42,7 @@ function handleAuthError(error: any) {
     // These are not critical errors and should not disrupt the user experience.
     if (
       error.code === 'auth/cancelled-popup-request' ||
-      error.message.includes('INTERNAL ASSERTION FAILED')
+      (error.message && error.message.includes('INTERNAL ASSERTION FAILED'))
     ) {
       return;
     }
