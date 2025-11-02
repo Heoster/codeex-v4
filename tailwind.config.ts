@@ -18,7 +18,7 @@ export default {
     extend: {
       fontFamily: {
         body: ['Nunito', 'sans-serif'],
-        headline: ['Playfair Display', 'serif'],
+        headline: ['Space Grotesk', 'sans-serif'],
         code: ['Source Code Pro', 'monospace'],
       },
       colors: {
