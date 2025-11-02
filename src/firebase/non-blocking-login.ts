@@ -5,7 +5,9 @@ import {
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
   updateProfile,
-  User
+  User,
+  GoogleAuthProvider,
+  signInWithPopup
 } from 'firebase/auth';
 import { toast } from '@/hooks/use-toast';
 import { doc, setDoc } from 'firebase/firestore';
@@ -109,5 +111,46 @@ export function initiateEmailSignIn(authInstance: Auth, email: string, password:
                 variant: "destructive",
             });
         }
+    });
+}
+
+/** Handle Google Sign-In and profile creation */
+export function initiateGoogleSignIn(auth: Auth): void {
+  const provider = new GoogleAuthProvider();
+  signInWithPopup(auth, provider)
+    .then(async (result) => {
+      const user = result.user;
+      // Check if this is a new user
+      const isNewUser = result.additionalUserInfo?.isNewUser;
+
+      if (isNewUser) {
+        // Create profile for new user
+        await createUserProfile(user);
+        toast({
+            title: `Welcome, ${user.displayName}!`,
+            description: "Your account has been created with Google.",
+        });
+      } else {
+        // For returning users, just update last login
+         const firestore = getFirestore(user.app);
+         const userDocRef = doc(firestore, 'users', user.uid);
+         const updateData = { lastLoginTimestamp: new Date().toISOString() };
+         setDoc(userDocRef, updateData, { merge: true }).catch((serverError) => {
+            const permissionError = new FirestorePermissionError({
+                path: userDocRef.path,
+                operation: 'update',
+                requestResourceData: updateData,
+            });
+            errorEmitter.emit('permission-error', permissionError);
+        });
+      }
+    })
+    .catch((error) => {
+      console.error("Google Sign-In Error", error);
+      toast({
+        title: "Google Sign-In Failed",
+        description: error.message,
+        variant: "destructive",
+      });
     });
 }

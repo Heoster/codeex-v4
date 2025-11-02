@@ -10,8 +10,7 @@ import { Label } from "@/components/ui/label";
 import { GoogleIcon, WandIcon } from "@/components/icons";
 import { Logo } from "@/components/logo";
 import { useAuth, useUser } from "@/firebase";
-import { GoogleAuthProvider, signInWithPopup } from "firebase/auth";
-import { initiateEmailSignIn } from "@/firebase/non-blocking-login";
+import { initiateEmailSignIn, initiateGoogleSignIn } from "@/firebase/non-blocking-login";
 
 export default function LoginPage() {
   const auth = useAuth();
@@ -20,14 +19,9 @@ export default function LoginPage() {
   const [email, setEmail] = React.useState('');
   const [password, setPassword] = React.useState('');
 
-  const handleGoogleSignIn = async () => {
+  const handleGoogleSignIn = () => {
     if (!auth) return;
-    const provider = new GoogleAuthProvider();
-    try {
-      await signInWithPopup(auth, provider);
-    } catch (error) {
-      console.error("Error signing in with Google", error);
-    }
+    initiateGoogleSignIn(auth);
   };
 
   const handleEmailSignIn = (e: React.FormEvent) => {
