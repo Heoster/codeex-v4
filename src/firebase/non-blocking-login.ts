@@ -38,7 +38,13 @@ async function createUserProfile(user: User) {
 }
 
 function handleAuthError(error: any) {
+    if (error.code === 'auth/cancelled-popup-request') {
+        // Don't show an error toast if the user simply cancels the popup.
+        return;
+    }
+
     console.error("Authentication Error:", error);
+    
     if (error.code === 'auth/operation-not-allowed' || error.code === 'auth/configuration-not-found') {
         toast({
             title: "Authentication Not Enabled",
@@ -64,9 +70,6 @@ function handleAuthError(error: any) {
             description: "This email is already registered. Please login instead.",
             variant: "destructive",
         });
-    } else if (error.code === 'auth/cancelled-popup-request') {
-        // Don't show an error toast if the user simply cancels the popup.
-        return;
     } else {
         toast({
             title: "Authentication Error",
