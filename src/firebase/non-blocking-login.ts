@@ -7,7 +7,8 @@ import {
   updateProfile,
   User,
   GoogleAuthProvider,
-  signInWithPopup
+  signInWithPopup,
+  getAdditionalUserInfo
 } from 'firebase/auth';
 import { toast } from '@/hooks/use-toast';
 import { doc, setDoc } from 'firebase/firestore';
@@ -120,10 +121,9 @@ export function initiateGoogleSignIn(auth: Auth): void {
   signInWithPopup(auth, provider)
     .then(async (result) => {
       const user = result.user;
-      // Check if this is a new user
-      const isNewUser = result.additionalUserInfo?.isNewUser;
+      const additionalUserInfo = getAdditionalUserInfo(result);
 
-      if (isNewUser) {
+      if (additionalUserInfo?.isNewUser) {
         // Create profile for new user
         await createUserProfile(user);
         toast({
