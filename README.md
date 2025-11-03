@@ -63,4 +63,4 @@ CODEEX AI is built on a robust and modern technology stack, designed for perform
 This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
 
 ---
-_This project was bootstrapped and developed in Firebase Studio._
+_This project was bootstrapped and developed in Firebase Studio._# codeex-v4
